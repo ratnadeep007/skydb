@@ -83,3 +83,14 @@ impl Model {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn set_and_get_correct_value() {
+        let mut db = super::DB::init();
+        super::DB::set(&mut db, "Test".to_string(), "Test Data".to_string());
+        let data = super::DB::get(&db, "Test".to_string());
+        assert_eq!(data, "Test Data".to_string());
+    }
+}
