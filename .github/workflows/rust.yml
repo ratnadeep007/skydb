@@ -15,5 +15,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Test
-      run: cargo test --verbose
+    - name: Test Core
+      run: |
+        cd skydb-core
+        cargo test --verbose
+    - name: Test CLI
+      run: |
+        cd cli
+        cargo test --verbose

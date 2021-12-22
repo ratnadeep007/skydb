@@ -1,4 +1,4 @@
-use crate::core::extras::calculate_hash;
+use crate::dbcore::extras::calculate_hash;
 
 pub struct DB {
     pub state: State,
@@ -37,6 +37,18 @@ impl DB {
             }
         }
         0
+    }
+
+    pub fn keys(&self) -> Vec<String> {
+        let mut keys = Vec::new();
+        let state_models = &self.state.state_model;
+        for model in state_models {
+            if model.model.key.to_string() == "New State" {
+                continue;
+            }
+            keys.push(model.model.key.to_string());
+        }
+        keys
     }
 }
 
@@ -93,7 +105,7 @@ impl Model {
 
 #[cfg(test)]
 mod test {
-    use crate::core::extras::calculate_hash;
+    use crate::dbcore::extras::calculate_hash;
 
     #[test]
     fn set_and_get_correct_value() {

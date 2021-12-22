@@ -1,6 +1,6 @@
-use crate::core::model::*;
+pub mod dbcore;
 
-use super::model;
+use crate::dbcore::model::DB;
 
 pub fn init_db() -> DB {
     let db = DB::init();
@@ -17,21 +17,26 @@ fn check_init(db: DB) -> DB {
     db
 }
 
-pub fn set(db: &mut model::DB, key: String, data: String) -> bool {
+pub fn set(db: &mut DB, key: String, data: String) -> bool {
     db.set(key, data)
 }
 
-pub fn get(db: &model::DB, key: String) -> String {
+pub fn get(db: &DB, key: String) -> String {
     db.get(key)
 }
 
-pub fn get_hash(db: &model::DB, key: String) -> u64 {
+pub fn get_hash(db: &DB, key: String) -> u64 {
     db.get_hash(key)
+}
+
+pub fn keys(db: &DB) -> Vec<String> {
+    db.keys()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{calculate_hash, core::model::Model};
+    use crate::dbcore::extras::calculate_hash;
+    use crate::dbcore::model::Model;
 
     #[test]
     fn db_initializing_correctly() {

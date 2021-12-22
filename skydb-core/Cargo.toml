@@ -1,0 +1,13 @@
+[package]
+name = "skydbcore"
+version = "0.0.1-alpha"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "skydbcore"
+src = "src/lib.rs"
+
+
