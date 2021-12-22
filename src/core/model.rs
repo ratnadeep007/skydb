@@ -1,3 +1,5 @@
+use crate::core::extras::calculate_hash;
+
 pub struct DB {
     pub state: State,
 }
@@ -10,62 +12,67 @@ impl DB {
     }
 
     pub fn set(&mut self, key: String, data: String) -> bool {
-        let state = &mut self.state;
-        let state_model = &mut state.state_model;
         let model = Model::new(key, data);
-        let _ = &state_model.model.push(model);
+        let hash = calculate_hash(&model);
+        let new_state_model = StateModel::new(model, hash);
+        let _ = &self.state.state_model.push(new_state_model);
         true
     }
 
     pub fn get(&self, key: String) -> String {
-        let state = &self.state;
-        let state_model = &state.state_model;
-        let model = &state_model.model;
-        let mut result = String::new();
-        for item in model {
-            if item.key == key {
-                result = item.data.clone();
+        let state_models = &self.state.state_model;
+        for model in state_models {
+            if model.model.key == key {
+                return model.model.data.to_string();
             }
         }
-        result
+        "".to_string()
+    }
+
+    pub fn get_hash(&self, key: String) -> u64 {
+        let state_models = &self.state.state_model;
+        for model in state_models {
+            if model.model.key == key {
+                return model.hash;
+            }
+        }
+        0
     }
 }
 
 pub struct State {
     pub name: String,
-    pub state_model: StateModel,
+    pub state_model: Vec<StateModel>,
 }
 
 impl State {
     pub fn new(name: Option<String>) -> State {
         State {
             name: name.unwrap_or("default".to_string()),
-            state_model: StateModel::init(),
+            state_model: vec![StateModel::init()],
         }
     }
 }
 
 pub struct StateModel {
-    pub model: Vec<Model>,
+    pub model: Model,
     pub hash: u64,
 }
 
 impl StateModel {
-    pub fn new() -> StateModel {
-        StateModel {
-            model: Vec::new(),
-            hash: 0,
-        }
+    pub fn new(model: Model, hash: u64) -> StateModel {
+        StateModel { model, hash }
     }
 
     pub fn init() -> StateModel {
         StateModel {
-            model: vec![Model::init()],
+            model: Model::init(),
             hash: 0,
         }
     }
 }
 
+#[derive(Hash)]
 pub struct Model {
     pub key: String,
     pub data: String,
@@ -86,11 +93,33 @@ impl Model {
 
 #[cfg(test)]
 mod test {
+    use crate::core::extras::calculate_hash;
+
     #[test]
     fn set_and_get_correct_value() {
         let mut db = super::DB::init();
         super::DB::set(&mut db, "Test".to_string(), "Test Data".to_string());
         let data = super::DB::get(&db, "Test".to_string());
         assert_eq!(data, "Test Data".to_string());
+    }
+
+    #[test]
+    fn get_returns_empty_string_if_key_not_found() {
+        let db = super::DB::init();
+        let data = super::DB::get(&db, "Test".to_string());
+        assert_eq!(data, "".to_string());
+    }
+
+    #[test]
+    fn check_hash() {
+        let mut db = super::DB::init();
+        super::DB::set(
+            &mut db,
+            "Test Hash".to_string(),
+            "Test Hash Data".to_string(),
+        );
+        let model = super::Model::new("Test Hash".to_string(), "Test Hash Data".to_string());
+        let hash = super::DB::get_hash(&db, "Test Hash".to_string());
+        assert_eq!(hash, calculate_hash(&model));
     }
 }
