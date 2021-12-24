@@ -4,7 +4,9 @@ use skydbcore::dbcore::model::DB;
 use skydbcore::get as get_action;
 use skydbcore::get_hash as get_hash_action;
 use skydbcore::keys as keys_action;
+use skydbcore::read as read_action;
 use skydbcore::set as set_action;
+use skydbcore::store as write_action;
 
 pub fn set(split_string: Vec<&str>, db: &mut DB) {
     if split_string.len() == 3 {
@@ -46,8 +48,28 @@ pub fn keys(split_string: Vec<&str>, db: &mut DB) {
     }
 }
 
+pub fn write(split_string: Vec<&str>, db: &mut DB) {
+    if split_string.len() == 1 {
+        write_action(db);
+        println!("Write successful");
+    } else {
+        println!("Usage: write");
+    }
+}
+
+pub fn read(split_string: Vec<&str>, db: &mut DB) {
+    if split_string.len() == 1 {
+        read_action(db);
+        println!("Read successful");
+    } else {
+        println!("Usage: read");
+    }
+}
+
 #[cfg(test)]
 mod test {
+    use std::path::Path;
+
     use skydbcore::dbcore::extras::calculate_hash;
     use skydbcore::dbcore::model::Model;
 
@@ -85,5 +107,24 @@ mod test {
         set(vec!["set", "key", "data"], &mut db);
         keys(vec!["keys"], &mut db);
         assert_eq!(db.keys(), vec!["key".to_string()]);
+    }
+
+    #[test]
+    fn test_write() {
+        use super::*;
+        let mut db = DB::init();
+        set(vec!["set", "key", "data"], &mut db);
+        write(vec!["write"], &mut db);
+        assert!(Path::new("default.sky").exists());
+    }
+
+    #[test]
+    fn test_read() {
+        use super::*;
+        let mut db = DB::init();
+        set(vec!["set", "key", "data"], &mut db);
+        write(vec!["read"], &mut db);
+        let data = get_action(&db, "key".to_string());
+        assert_eq!(data, "data");
     }
 }

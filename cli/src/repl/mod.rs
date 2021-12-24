@@ -3,7 +3,9 @@ pub mod actions;
 use crate::repl::actions::get as get_action;
 use crate::repl::actions::get_hash as get_hash_action;
 use crate::repl::actions::keys as keys_action;
+use crate::repl::actions::read as read_action;
 use crate::repl::actions::set as set_action;
+use crate::repl::actions::write as write_action;
 use rustyline::Editor;
 use skydbcore::dbcore::model::DB;
 use skydbcore::init_db;
@@ -32,7 +34,7 @@ pub fn start_repl() {
 fn operations(input: String, db: &mut DB) {
     let split_string = input.split_whitespace().collect::<Vec<&str>>();
     let command = split_string[0];
-    match command {
+    match command.to_lowercase().as_str() {
         "set" => {
             set_action(split_string, db);
         }
@@ -44,6 +46,12 @@ fn operations(input: String, db: &mut DB) {
         }
         "keys" => {
             keys_action(split_string, db);
+        }
+        "write" => {
+            write_action(split_string, db);
+        }
+        "read" => {
+            read_action(split_string, db);
         }
         "exit" => {
             println!("Bye!!!");
